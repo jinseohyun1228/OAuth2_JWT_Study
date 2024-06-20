@@ -32,8 +32,8 @@ spring:
         registration:
           google:
             client-name: Google
-            client-id: -
-            client-secret: -
+            client-id: 588662175041-tf3cnergejg3gdceurbq5vbv1lb98qe6.apps.googleusercontent.com
+            client-secret: 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
             redirect-uri: http://localhost:8000/oauth_jwt/login/oauth2/code/google
             authorization-grant-type: authorization_code
             scope:
@@ -50,8 +50,8 @@ spring:
 
           naver:
             client-name: naver
-            client-id: -
-            client-secret: -
+            client-id: EimY512HmQN_r6kbnPRp
+            client-secret: VvKytt8bhK
             redirect-uri: http://localhost:8000/oauth_jwt/login/oauth2/code/naver
             authorization-grant-type: authorization_code
             scope:
