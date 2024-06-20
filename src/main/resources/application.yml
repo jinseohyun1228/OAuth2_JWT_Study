@@ -1,0 +1,49 @@
+server:
+  port: 8000
+  servlet:
+    context-path: /oauth_jwt
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/oauth_jwt?serverTimezone=Asia/Seoul
+    username: jsh
+    password: 1234
+
+  mvc:
+    view:
+      prefix: /templates/
+      suffix: .mustache
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-name: Google
+            client-id: ????? ?? ?? ???
+            client-secret: ????? ?? ?? ????
+            redirect-uri: ???? ??? ??? ??? ?? URI
+            authorization-grant-type: authorization_code
+            scope:
+              - profile
+              - email
+
+# ??? ???? ?? ??? ?? ?? ??. ??? ???? ???? ??? ?? ??? ???~!
+#        provider:
+#          google:
+#            authorization-uri: https://accounts.google.com/o/oauth2/auth
+#            token-uri: https://oauth2.googleapis.com/token
+#            user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+#            user-name-attribute: sub
