@@ -15,60 +15,91 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 public class JWTFilter extends OncePerRequestFilter {
-    //강의를 안보고 코드를 짜봐용~!
+
     private final JWTUtil jwtUtil;
 
     public JWTFilter(JWTUtil jwtUtil) {
+
         this.jwtUtil = jwtUtil;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        /*
-        구현 기능:
-               1. 요청 쿠키에서 jwt를 꺼내보자.
-               2. 없으면 다음 필터 ㄱㄱ
-               3. 있으면 jwt 꺼내서 검증하기
-         */
+        String requestUri = request.getRequestURI();
+
+        if (requestUri.matches("^\\/login(?:\\/.*)?$")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+        if (requestUri.matches("^\\/oauth2(?:\\/.*)?$")) {
+
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+
+        //cookie들을 불러온 뒤 Authorization Key에 담긴 쿠키를 찾음
+        String authorization = null;
         Cookie[] cookies = request.getCookies();
-        String token = null;
+        if (cookies == null) {
+            System.out.println("cookie null");
+            filterChain.doFilter(request, response);
+
+            //조건이 해당되면 메소드 종료 (필수)
+            return;
+        }
+
         for (Cookie cookie : cookies) {
+            System.out.println(cookie.getName());
             if (cookie.getName().equals("Authorization")) {
-                token = cookie.getValue();
+
+                authorization = cookie.getValue();
             }
         }
 
-        if (token == null) {
-            // 토큰이 없는 경우, 강제 종료를 해야하나?
-            System.out.println("토큰이 없어요.");
+
+        //Authorization 헤더 검증
+        if (authorization == null) {
+
+            System.out.println("token null");
             filterChain.doFilter(request, response);
+
+            //조건이 해당되면 메소드 종료 (필수)
             return;
         }
 
+        //토큰
+        String token = authorization;
+
+        //토큰 소멸 시간 검증
         if (jwtUtil.isExpired(token)) {
-            //유효한 검사 실패
-            System.out.println("토큰이 만료되었어요.");
+
+            System.out.println("token expired");
             filterChain.doFilter(request, response);
+
+            //조건이 해당되면 메소드 종료 (필수)
             return;
         }
 
+        //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
         String role = jwtUtil.getRole(token);
 
+        //userDTO를 생성하여 값 set
         UserDTO userDTO = new UserDTO();
-
+        userDTO.setUsername(username);
         userDTO.setRole(role);
-        userDTO.setName(username);
 
+        //UserDetails에 회원 정보 객체 담기
         CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 
+        //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        //세션에 사용자 등록
+        SecurityContextHolder.getContext().
+                setAuthentication(authToken);
 
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        System.out.println(" 올바른 허용이요 ");
         filterChain.doFilter(request, response);
     }
 }
-

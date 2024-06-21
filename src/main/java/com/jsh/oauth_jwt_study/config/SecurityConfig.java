@@ -1,14 +1,22 @@
 package com.jsh.oauth_jwt_study.config;
 
+import com.jsh.oauth_jwt_study.jwt.JWTFilter;
 import com.jsh.oauth_jwt_study.jwt.JWTUtil;
 import com.jsh.oauth_jwt_study.oauth2.CustomSuccessHandler;
 import com.jsh.oauth_jwt_study.service.CustomOAuth2UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+
+import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
@@ -24,34 +32,46 @@ public class SecurityConfig {
         this.jwtUtil = jwtUtil;
     }
 
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        //csrf disable
         http
-                //csrf disable
-                .csrf((auth) -> auth.disable())
+                .csrf((auth) -> auth.disable());
 
-                //From 로그인 방식 disable
-                .formLogin((auth) -> auth.disable())
+        //From 로그인 방식 disable
+        http
+                .formLogin((auth) -> auth.disable());
 
-                //HTTP Basic 인증 방식 disable
-                .httpBasic((auth) -> auth.disable())
+        //HTTP Basic 인증 방식 disable
+        http
+                .httpBasic((auth) -> auth.disable());
 
-                //oauth2 (예전 버전 : .oauth2Login(Customizer.withDefaults())
+        //JWTFilter 추가
+        http
+              .addFilterBefore(new JWTFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+
+        //oauth2
+        http
                 .oauth2Login((oauth2) -> oauth2
                         .userInfoEndpoint((userInfoEndpointConfig) -> userInfoEndpointConfig
                                 .userService(customOAuth2UserService))
-                        .successHandler(customSuccessHandler)) // 성공 후 핸들러 추가
+                        .successHandler(customSuccessHandler)
+                );
 
-                //경로별 인가 작업
+        //경로별 인가 작업
+        http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/").permitAll()
-                        .anyRequest().authenticated())
+                        .anyRequest().authenticated());
 
-                //세션 설정 : STATELESS
+        //세션 설정 : STATELESS
+        http
                 .sessionManagement((session) -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
     }
+
 }

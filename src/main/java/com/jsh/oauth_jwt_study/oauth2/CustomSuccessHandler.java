@@ -27,7 +27,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
     /*
-    * 스프링 시큐리티에서 인증이 성공적으로 완료된 후 수행되는 작업을 정의한다.
+    * 스프링 시큐리티에서 인증이 성공적으로 완료된 후 수행되는 작업을 정의한다
     * 이 메서드가 수행할 수 있는 것
     *
     * 1. 리다이렉션 처리
